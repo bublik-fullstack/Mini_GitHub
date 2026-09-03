@@ -281,20 +281,17 @@ curl -s http://localhost:8000/api/repos/alice/demo/stargazers \
 ## Как устроен проект (дерево файлов)
 
 ```
-mini_github/
-├── __init__.py        — пустой, помечает пакет как Django-проект
-├── asgi.py            — entrypoint для ASGI (асинхронные соединения)
-├── wsgi.py            — entrypoint для WSGI (gunicorn/uWSGI)
-├── celery.py          — настройка Celery, подключение к Redis
-├── urls.py            — маршруты API (роутинг)
-├── views.py           — главные view: редирект на /api, оглавление API
-├── settings/          — настройки Django
-│   ├── __init__.py
-│   ├── base.py        — общие настройки (БД, Redis, JWT, Celery, DRF)
-│   ├── dev.py         — профиль для разработки (DEBUG=True)
-│   ├── local.py       — локальный профиль без Docker (SQLite + память)
-│   └── prod.py        — профиль для продакшена (безопасные настройки)
-└── .gitignore         — игнорирует db.sqlite3, storage/, __pycache__/
+mini_github/            — Django-проект (settings, celery, urls, wsgi)
+core/                   — общие сервисы: cache, locks, validators, pagination
+accounts/               — User, регистрация, JWT, /me
+repositories/           — repo + файлы + коммиты + CI
+issues/                 — issue + комментарии
+frontend/               — React + TypeScript клиент
+Dockerfile              — образ API
+docker-compose.yml      — оркестрация всех сервисов
+docker-entrypoint.sh    — запуск миграций + gunicorn
+.env.example            — шаблон переменных окружения
+README.md               — эта документация
 ```
 
 ### Профили настроек
@@ -351,3 +348,80 @@ mini_github/
 ## Автор
 
 bublik-fullstack
+
+---
+
+## 7. Фронтенд (React + TypeScript)
+
+Одностраничное приложение для работы с API — в папке `frontend/`.
+
+### Стек
+
+| Что | Зачем |
+|-----|-------|
+| React 19 | UI-библиотека |
+| TypeScript | Строгая типизация |
+| Vite | Сборщик и dev-сервер |
+| React Router | Клиентский роутинг |
+| Axios | HTTP-клиент с JWT-интерсепторами |
+
+### Возможности
+
+- JWT-аутентификация (вход, регистрация, автообновление токена)
+- Просмотр репозиториев
+- Дерево файлов с навигацией по директориям
+- Просмотр содержимого файлов
+- История коммитов с diff
+- Issues и комментарии
+- Прогоны CI
+- Тёмная тема в стиле GitHub
+
+### Запуск
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Фронтенд будет доступен на `http://localhost:5173`.
+
+По умолчанию API ожидается на `http://localhost:8000/api`.
+Чтобы изменить — создайте файл `frontend/.env`:
+
+```
+VITE_API_BASE=http://localhost:8000/api
+```
+
+### Сборка
+
+```bash
+cd frontend
+npm run build
+```
+
+Результат попадёт в `frontend/dist/`.
+
+### Структура
+
+```
+frontend/
+├── src/
+│   ├── api/          API-клиент (axios, JWT-интерсепторы)
+│   ├── components/   Переиспользуемые компоненты
+│   │   ├── Header.tsx
+│   │   ├── RepoCard.tsx
+│   │   ├── FileTree.tsx
+│   │   └── DiffViewer.tsx
+│   ├── pages/        Страницы
+│   │   ├── Home.tsx
+│   │   ├── Login.tsx
+│   │   ├── Register.tsx
+│   │   └── RepoDetail.tsx
+│   ├── types/        TypeScript-интерфейсы
+│   ├── App.tsx       Роутинг
+│   └── main.tsx      Точка входа
+├── package.json
+├── tsconfig.json
+└── vite.config.ts
+```
