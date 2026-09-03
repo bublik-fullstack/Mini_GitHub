@@ -11,9 +11,9 @@ load_dotenv()
 
 # ── Общие ───────────────────────────────────────────────────────────────────
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SECRET_KEY = os.getenv("SECRET_KEY", "dev-insecure-change-me")
+SECRET_KEY = os.environ["SECRET_KEY"]
 DEBUG = os.getenv("DEBUG", "0") == "1"
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
+ALLOWED_HOSTS = [h for h in os.getenv("ALLOWED_HOSTS", "").split(",") if h]
 
 # Контентно-адресуемое хранилище блобов (на томе, вне БД)
 STORAGE_ROOT = os.getenv("STORAGE_ROOT", os.path.join(BASE_DIR, "storage"))
@@ -70,7 +70,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": os.getenv("POSTGRES_DB", "minigithub"),
         "USER": os.getenv("POSTGRES_USER", "minigithub"),
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "minigithub"),
+        "PASSWORD": os.environ["POSTGRES_PASSWORD"],
         "HOST": os.getenv("POSTGRES_HOST", "db"),
         "PORT": os.getenv("POSTGRES_PORT", "5432"),
     }
